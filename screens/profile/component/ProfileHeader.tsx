@@ -5,6 +5,7 @@ import { UserInfo } from '@/storage/userinfo/type';
 import { ScreenDimension } from '@/constants/Dimensions';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { capitalizeFirstLetter } from '@/util/SiteUtil';
 
 type ProfileHeaderProps = {
   user: UserInfo | null;
@@ -53,7 +54,7 @@ const ProfileHeader = ({ user }: ProfileHeaderProps) => {
         {/* User Info */}
         <View style={styles.userInfo}>
           <Text style={[textTheme.heading1, styles.userName]}>
-            {user?.name || 'Người Dùng'}
+            {user?.name ? capitalizeFirstLetter(user.name) : 'Người Dùng'}
           </Text>
           {/* Dòng 1: Tuổi */}
           {!!user?.age && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Platform, ToastAndroid } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   requestPermissionNotificationReminder,
   startReminder,
@@ -8,10 +9,14 @@ import {
   getIntervalLabel,
 } from './util';
 
+const REMINDER_MINUTES_KEY = '@drinkReminder:customMinutes';
+
 export const useDrinkReminder = () => {
   const [isReminderActive, setIsReminderActive] = useState(false);
   const [selectedInterval, setSelectedInterval] = useState<ReminderInterval>('2hours');
+  const [reminderMinutes, setReminderMinutes] = useState<number>(120);
 
+  // Request notification permissions on load
   useEffect(() => {
     if (Platform.OS !== 'web') {
       requestPermissionNotificationReminder().then(({ status }) => {
@@ -25,8 +30,23 @@ export const useDrinkReminder = () => {
   useEffect(() => {
     if (Platform.OS !== 'web') {
       getAllnoti();
+      loadReminderMinutes();
     }
   }, []);
+
+  const loadReminderMinutes = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(REMINDER_MINUTES_KEY);
+      if (stored !== null) {
+        const minutes = parseInt(stored, 10);
+        if (!isNaN(minutes) && minutes > 0) {
+          setReminderMinutes(minutes);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading reminder minutes:', error);
+    }
+  };
 
   const getAllnoti = async () => {
     if (Platform.OS === 'web') {
@@ -41,7 +61,7 @@ export const useDrinkReminder = () => {
       setIsReminderActive(false);
     }
   };
-
+  // Cancel existing notifications if reminder is paused
   const toggleReminder = async () => {
     if (Platform.OS === 'web') {
       alert('Notifications are not available on web. Please use the mobile app.');
@@ -65,6 +85,7 @@ export const useDrinkReminder = () => {
     setIsReminderActive(!isReminderActive);
   };
 
+  // Schedule notification based on selected interval
   const scheduleReminder = async (interval?: ReminderInterval) => {
     if (Platform.OS === 'web') {
       return;
@@ -72,8 +93,9 @@ export const useDrinkReminder = () => {
     try {
       const intervalToUse = interval || selectedInterval;
       await Notifications.cancelAllScheduledNotificationsAsync();
-      await startReminder(intervalToUse);
-      const intervalLabel = getIntervalLabel(intervalToUse);
+      const customMinutes = intervalToUse === 'custom' ? reminderMinutes : undefined;
+      await startReminder(intervalToUse, null, customMinutes);
+      const intervalLabel = getIntervalLabel(intervalToUse, customMinutes);
       if (Platform.OS === 'android') {
         ToastAndroid.show(`Nhắc nhở đã được đặt mỗi ${intervalLabel}`, 3000);
       } else {
@@ -91,11 +113,25 @@ export const useDrinkReminder = () => {
     }
   };
 
+  const updateReminderMinutes = async (minutes: number) => {
+    try {
+      setReminderMinutes(minutes);
+      await AsyncStorage.setItem(REMINDER_MINUTES_KEY, minutes.toString());
+      if (isReminderActive) {
+        await scheduleReminder('custom');
+      }
+    } catch (error) {
+      console.error('Error updating reminder minutes:', error);
+    }
+  };
+
   return {
     isReminderActive,
     toggleReminder,
     selectedInterval,
     updateInterval,
     scheduleReminder,
+    reminderMinutes,
+    updateReminderMinutes,
   };
 };

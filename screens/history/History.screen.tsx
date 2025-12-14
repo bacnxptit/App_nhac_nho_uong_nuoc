@@ -199,7 +199,7 @@ const HistoryScreen = () => {
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
       <Header
-        title="Lịch Sử"
+        title="Lịch sử"
         containerStyling={{
           paddingTop: Math.max(insets.top, 6),
         }}

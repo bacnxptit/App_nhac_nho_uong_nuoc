@@ -6,49 +6,296 @@ import { UserInfo } from '@/storage/userinfo/type';
 export const REMINDER_INTERVALS = {
   '30min': 30 * 60,
   '1hour': 60 * 60,
-  '2hours': 60 * 60 * 2,
-  '3hours': 60 * 60 * 3,
+  '2hours': 120 * 60,
+  '3hours': 180 * 60,
+  'custom': 0, // Placeholder, sẽ được thay thế bởi customMinutes
 } as const;
 
 export type ReminderInterval = keyof typeof REMINDER_INTERVALS;
 
-export const getIntervalLabel = (interval: ReminderInterval): string => {
-  const labels: Record<ReminderInterval, string> = {
+export const getIntervalLabel = (interval: ReminderInterval, customMinutes?: number): string => {
+  if (interval === 'custom' && customMinutes !== undefined) {
+    if (customMinutes < 60) {
+      return `${customMinutes} phút`;
+    } else if (customMinutes === 60) {
+      return '1 giờ';
+    } else {
+      const hours = Math.floor(customMinutes / 60);
+      const minutes = customMinutes % 60;
+      if (minutes === 0) {
+        return `${hours} giờ`;
+      } else {
+        return `${hours}.${Math.round(minutes / 6)} giờ`;
+      }
+    }
+  }
+
+  const labels: Record<Exclude<ReminderInterval, 'custom'>, string> = {
     '30min': '30 phút',
     '1hour': '1 giờ',
     '2hours': '2 giờ',
     '3hours': '3 giờ',
   };
-  return labels[interval];
+  return labels[interval as Exclude<ReminderInterval, 'custom'>];
 };
 
-export const startReminder = async (interval: ReminderInterval = '2hours') => {
+// Lấy số giây từ interval (hỗ trợ custom)
+export const getIntervalSeconds = (interval: ReminderInterval, customMinutes?: number): number => {
+  if (interval === 'custom' && customMinutes !== undefined && customMinutes > 0) {
+    return customMinutes * 60;
+  }
+  return REMINDER_INTERVALS[interval] || 120 * 60; // Default 2 hours
+};
+
+// Mảng các thông điệp nhắc nhở chuyên nghiệp và đa dạng
+const REMINDER_MESSAGES = [
+  {
+    title: '💧 Đến giờ uống nước!',
+    body: 'Hãy uống nước để duy trì sức khỏe và năng lượng cho cơ thể bạn.',
+  },
+  {
+    title: '⏰ Nhắc nhở uống nước',
+    body: 'Cơ thể bạn cần được bổ sung nước. Hãy uống một ly nước ngay nhé!',
+  },
+  {
+    title: '🚰 Giữ cơ thể đủ nước',
+    body: 'Uống nước đều đặn giúp cơ thể hoạt động tốt hơn. Đã đến lúc bổ sung nước rồi!',
+  },
+  {
+    title: '💪 Nạp năng lượng',
+    body: 'Nước là nguồn năng lượng tự nhiên. Hãy uống nước để duy trì sự tập trung.',
+  },
+  {
+    title: '🌊 Nhắc nhở uống nước',
+    body: 'Đã đến lúc bổ sung nước cho cơ thể. Hãy uống một ly nước để cảm thấy sảng khoái hơn!',
+  },
+  {
+    title: '✨ Chăm sóc sức khỏe',
+    body: 'Uống nước đều đặn là cách đơn giản nhất để chăm sóc sức khỏe. Hãy uống ngay nhé!',
+  },
+];
+
+// Lấy thông điệp ngẫu nhiên dựa trên thời gian trong ngày
+const getReminderMessage = (hour: number): { title: string; body: string } => {
+  let messageIndex = 0;
+
+  // Chọn thông điệp dựa trên thời gian trong ngày để đa dạng hơn
+  if (hour >= 6 && hour < 9) {
+    // Buổi sáng sớm
+    messageIndex = 0;
+  } else if (hour >= 9 && hour < 12) {
+    // Buổi sáng
+    messageIndex = 1;
+  } else if (hour >= 12 && hour < 15) {
+    // Buổi trưa
+    messageIndex = 2;
+  } else if (hour >= 15 && hour < 18) {
+    // Buổi chiều
+    messageIndex = 3;
+  } else if (hour >= 18 && hour < 21) {
+    // Buổi tối
+    messageIndex = 4;
+  } else {
+    // Tối muộn
+    messageIndex = 5;
+  }
+
+  return REMINDER_MESSAGES[messageIndex];
+};
+
+// Tính toán thời gian hoạt động trong ngày (từ wakeUpTime đến bedTime)
+const calculateActiveHours = (wakeUpTime: string, bedTime: string): number => {
+  const [wakeHour, wakeMin] = wakeUpTime.split(':').map(Number);
+  const [bedHour, bedMin] = bedTime.split(':').map(Number);
+
+  let wakeMinutes = wakeHour * 60 + wakeMin;
+  let bedMinutes = bedHour * 60 + bedMin;
+
+  // Xử lý trường hợp bedTime qua đêm (ví dụ: 23:00 đến 07:00)
+  if (bedMinutes < wakeMinutes) {
+    bedMinutes += 24 * 60;
+  }
+
+  return (bedMinutes - wakeMinutes) / 60; // Trả về số giờ
+};
+
+// Tạo lịch trình nhắc nhở thông minh dựa trên giờ thức dậy và đi ngủ
+const createSmartSchedule = (
+  interval: ReminderInterval,
+  wakeUpTime: string,
+  bedTime: string,
+  customMinutes?: number,
+): Date[] => {
+  const [wakeHour, wakeMin] = wakeUpTime.split(':').map(Number);
+  const [bedHour, bedMin] = bedTime.split(':').map(Number);
+
+  const intervalSeconds = getIntervalSeconds(interval, customMinutes);
+  const intervalMinutes = intervalSeconds / 60;
+  const activeHours = calculateActiveHours(wakeUpTime, bedTime);
+  const remindersPerDay = Math.max(1, Math.floor((activeHours * 60) / intervalMinutes));
+
+  const schedule: Date[] = [];
+  const now = new Date();
+
+  // Tính toán thời gian wake và bed dưới dạng phút
+  const wakeTotalMinutes = wakeHour * 60 + wakeMin;
+  const bedTotalMinutes = bedHour * 60 + bedMin;
+  const bedTotalMinutesNextDay = bedTotalMinutes < wakeTotalMinutes
+    ? bedTotalMinutes + 24 * 60
+    : bedTotalMinutes;
+
+  // Tạo lịch cho 3 ngày tiếp theo (giảm từ 7 để tránh vượt quá giới hạn 500 thông báo)
+  const MAX_DAYS = 3;
+  const MAX_NOTIFICATIONS = 150; // Giới hạn tổng số thông báo
+
+  for (let day = 0; day < MAX_DAYS && schedule.length < MAX_NOTIFICATIONS; day++) {
+    const targetDate = new Date(now);
+    targetDate.setDate(targetDate.getDate() + day);
+    targetDate.setHours(wakeHour, wakeMin, 0, 0);
+
+    // Thêm các nhắc nhở trong ngày
+    for (let i = 0; i < remindersPerDay && schedule.length < MAX_NOTIFICATIONS; i++) {
+      const reminderTime = new Date(targetDate);
+      reminderTime.setMinutes(reminderTime.getMinutes() + i * intervalMinutes);
+
+      // Kiểm tra xem thời gian có nằm trong khoảng active hours không
+      const reminderHour = reminderTime.getHours();
+      const reminderMin = reminderTime.getMinutes();
+      const reminderTotalMinutes = reminderHour * 60 + reminderMin;
+
+      // Tính toán thời gian bed cho ngày hiện tại
+      let currentBedTotalMinutes = bedTotalMinutes;
+      if (bedTotalMinutes < wakeTotalMinutes) {
+        // Nếu bedTime qua đêm, cộng thêm 24 giờ
+        if (reminderTotalMinutes < wakeTotalMinutes) {
+          // Reminder ở ngày hôm trước
+          currentBedTotalMinutes = bedTotalMinutes + 24 * 60;
+        } else {
+          // Reminder ở ngày hiện tại
+          currentBedTotalMinutes = bedTotalMinutes;
+        }
+      }
+
+      // Chỉ thêm nếu thời gian nhắc nhở nằm trong khoảng wakeUpTime đến bedTime
+      const isWithinActiveHours =
+        reminderTotalMinutes >= wakeTotalMinutes &&
+        reminderTotalMinutes < currentBedTotalMinutes;
+
+      if (isWithinActiveHours && reminderTime > now && schedule.length < MAX_NOTIFICATIONS) {
+        schedule.push(reminderTime);
+      }
+    }
+  }
+
+  return schedule;
+};
+
+export const startReminder = async (
+  interval: ReminderInterval = '2hours',
+  userInfo?: UserInfo | null,
+  customMinutes?: number,
+) => {
   if (Platform.OS === 'web') {
     return;
   }
 
   try {
-    const seconds = REMINDER_INTERVALS[interval];
+    // Hủy tất cả các nhắc nhở cũ
+    const allNotifications = await Notifications.getAllScheduledNotificationsAsync();
+    for (const notification of allNotifications) {
+      if (
+        notification.identifier.startsWith('drink-reminder-') ||
+        notification.content.data?.type === 'drink-reminder'
+      ) {
+        await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+      }
+    }
+
     const intervalLabel = getIntervalLabel(interval);
 
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: '⏰ Đến giờ uống nước!',
-        body: `Hãy uống nước để giữ cơ thể luôn khỏe mạnh! (Nhắc nhở mỗi ${intervalLabel})`,
-        sound: true,
-        vibrate: [2],
-        data: {
-          type: 'drink-reminder',
-          interval: interval,
+    // Nếu có thông tin người dùng, sử dụng lịch trình thông minh
+    if (userInfo?.wakeUpTime && userInfo?.bedTime) {
+      const schedule = createSmartSchedule(
+        interval,
+        userInfo.wakeUpTime,
+        userInfo.bedTime,
+        customMinutes,
+      );
+
+      // Lên lịch từng nhắc nhở (giới hạn để tránh vượt quá 500)
+      const MAX_SCHEDULE = 100; // Giới hạn số thông báo được lên lịch một lần
+      let scheduledCount = 0;
+
+      for (let i = 0; i < schedule.length && scheduledCount < MAX_SCHEDULE; i++) {
+        const reminderTime = schedule[i];
+        const reminderHour = reminderTime.getHours();
+        const message = getReminderMessage(reminderHour);
+
+        // Sử dụng TIME_INTERVAL cho cả hai nền tảng
+        const secondsUntilReminder = Math.floor(
+          (reminderTime.getTime() - new Date().getTime()) / 1000,
+        );
+
+        if (secondsUntilReminder > 0) {
+          try {
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: message.title,
+                body: message.body,
+                sound: true,
+                vibrate: [2],
+                data: {
+                  type: 'drink-reminder',
+                  interval: interval,
+                },
+              },
+              trigger: {
+                type: SchedulableTriggerInputTypes.TIME_INTERVAL,
+                seconds: secondsUntilReminder,
+                repeats: false,
+              },
+              identifier: `drink-reminder-${interval}-${i}-${reminderTime.getTime()}`,
+            });
+            scheduledCount++;
+          } catch (error) {
+            console.error(`Error scheduling notification ${i}:`, error);
+            // Nếu gặp lỗi giới hạn, dừng lại
+            if (error instanceof Error && error.message.includes('Maximum limit')) {
+              console.warn('Reached notification limit, stopping scheduling');
+              break;
+            }
+          }
+        }
+      }
+
+      if (scheduledCount > 0) {
+        console.log(`Scheduled ${scheduledCount} drink reminder notifications`);
+      }
+    } else {
+      // Fallback: sử dụng phương pháp cũ nếu không có thông tin người dùng
+      const seconds = getIntervalSeconds(interval, customMinutes);
+      const now = new Date();
+      const message = getReminderMessage(now.getHours());
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: message.title,
+          body: message.body,
+          sound: true,
+          vibrate: [2],
+          data: {
+            type: 'drink-reminder',
+            interval: interval,
+          },
         },
-      },
-      trigger: {
-        type: SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: seconds,
-        repeats: true,
-      },
-      identifier: `drink-reminder-${interval}`,
-    });
+        trigger: {
+          type: SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: seconds,
+          repeats: true,
+        },
+        identifier: `drink-reminder-${interval}`,
+      });
+    }
   } catch (error) {
     console.error('Error scheduling notification:', error);
   }

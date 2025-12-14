@@ -85,12 +85,9 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
     marginVertical: 30,
     flex: 1,
-    // alignItems: 'center',
   },
   imageView: {
     flex: 1,
-
-    // backgroundColor: 'red',
   },
   heightSelect: {
     flex: 1,

@@ -26,19 +26,17 @@ const DropdownSelector = ({
       scrollToHeight(findIndex);
     }, 500);
   }, []);
-  // Scroll to the selected height when clicked
   const scrollToHeight = (index: number) => {
     if (flatListRef.current && index !== -1) {
       flatListRef.current?.scrollToIndex({
         index,
         animated: true,
-        viewPosition: 0.5, // Ensure the clicked height is centered
+        viewPosition: 0.5,
       });
       setSelectedOption(options[index].toString());
     }
   };
 
-  // Function to handle scroll and find the centered item in the blue box
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     const index = Math.round(offsetY / ITEM_HEIGHT);

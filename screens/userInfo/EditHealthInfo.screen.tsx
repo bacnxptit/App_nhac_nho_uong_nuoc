@@ -11,14 +11,12 @@ import { Feather } from '@expo/vector-icons';
 import CommonTextInput from '@/components/field/CommonTextInput';
 import { ButtonTheme } from '@/style/ButtonTheme';
 import { calculateWaterIntake } from './util';
-import TimePicker from './component/TimePicker';
 
 const EditHealthInfoScreen = () => {
     const { textTheme } = useContext(FontContext);
     const { user, updateMultipleUserInfo } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
 
-    // State để lưu thông tin chỉnh sửa
     const [formData, setFormData] = useState<Partial<UserInfo>>({
         height: user?.height || 0,
         weight: user?.weight || 0,
@@ -43,25 +41,31 @@ const EditHealthInfoScreen = () => {
         }
     }, [user]);
 
-    // Tự động tính toán mục tiêu nước khi các dữ liệu khác thay đổi
+    // Hàm kiểm tra định dạng thời gian HH:mm
+    const isValidTimeFormat = (time: string): boolean => {
+        if (!time || time.trim() === '') return false;
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+        return timeRegex.test(time);
+    };
+
     const calculatedDailyGoal = useMemo(() => {
         if (!user || !user.age || !user.gender) {
             return formData.dailyGoal || 2000;
         }
 
-        // Kiểm tra xem có đủ dữ liệu để tính toán không
         if (
             formData.height &&
             formData.height > 0 &&
             formData.weight &&
             formData.weight > 0 &&
             formData.wakeUpTime &&
+            isValidTimeFormat(formData.wakeUpTime) &&
             formData.bedTime &&
+            isValidTimeFormat(formData.bedTime) &&
             formData.activity &&
             formData.climate
         ) {
             try {
-                // Xử lý trường hợp gender là 'Other' - chuyển thành 'preferNotToSay'
                 const genderForCalculation = user.gender === 'Other' ? 'preferNotToSay' : user.gender;
 
                 const calculated = calculateWaterIntake({
@@ -99,9 +103,18 @@ const EditHealthInfoScreen = () => {
             return;
         }
 
+        // Kiểm tra định dạng thời gian
+        if (formData.wakeUpTime && !isValidTimeFormat(formData.wakeUpTime)) {
+            Alert.alert('Lỗi', 'Vui lòng nhập đúng định dạng giờ thức dậy (HH:mm, ví dụ: 07:00)');
+            return;
+        }
+        if (formData.bedTime && !isValidTimeFormat(formData.bedTime)) {
+            Alert.alert('Lỗi', 'Vui lòng nhập đúng định dạng giờ đi ngủ (HH:mm, ví dụ: 23:00)');
+            return;
+        }
+
         setIsSaving(true);
         try {
-            // Tạo object chứa tất cả các cập nhật
             const updates: Record<string, any> = {};
 
             if (formData.height !== undefined && formData.height !== null) {
@@ -110,10 +123,10 @@ const EditHealthInfoScreen = () => {
             if (formData.weight !== undefined && formData.weight !== null) {
                 updates.weight = formData.weight;
             }
-            if (formData.wakeUpTime && formData.wakeUpTime.trim() !== '') {
+            if (formData.wakeUpTime && formData.wakeUpTime.trim() !== '' && isValidTimeFormat(formData.wakeUpTime)) {
                 updates.wakeUpTime = formData.wakeUpTime;
             }
-            if (formData.bedTime && formData.bedTime.trim() !== '') {
+            if (formData.bedTime && formData.bedTime.trim() !== '' && isValidTimeFormat(formData.bedTime)) {
                 updates.bedTime = formData.bedTime;
             }
             if (formData.activity && formData.activity.trim() !== '') {
@@ -122,12 +135,10 @@ const EditHealthInfoScreen = () => {
             if (formData.climate && formData.climate.trim() !== '') {
                 updates.climate = formData.climate;
             }
-            // Luôn cập nhật dailyGoal với giá trị đã tính toán
             if (calculatedDailyGoal && calculatedDailyGoal > 0) {
                 updates.dailyGoal = calculatedDailyGoal;
             }
 
-            // Cập nhật tất cả các trường cùng lúc
             if (Object.keys(updates).length > 0) {
                 await updateMultipleUserInfo(updates);
             }
@@ -202,9 +213,29 @@ const EditHealthInfoScreen = () => {
                         <Feather name="sunrise" size={18} color={COLOR_THEME.base.primary} />
                         <Text style={[textTheme.subText, styles.label]}>Giờ thức dậy</Text>
                     </View>
-                    <TimePicker
-                        value={formData.wakeUpTime || '07:00'}
-                        onChange={(time) => setFormData({ ...formData, wakeUpTime: time })}
+                    <CommonTextInput
+                        value={formData.wakeUpTime || ''}
+                        handleChangeText={(text) => {
+                            // Chỉ cho phép nhập số
+                            const numbersOnly = text.replace(/[^0-9]/g, '');
+
+                            // Tự động định dạng HH:mm
+                            let formatted = numbersOnly;
+                            if (numbersOnly.length > 2) {
+                                formatted = numbersOnly.slice(0, 2) + ':' + numbersOnly.slice(2, 4);
+                            } else if (numbersOnly.length === 2) {
+                                formatted = numbersOnly + ':';
+                            }
+
+                            // Giới hạn độ dài tối đa là 5 ký tự (HH:mm)
+                            if (formatted.length <= 5) {
+                                setFormData({ ...formData, wakeUpTime: formatted });
+                            }
+                        }}
+                        placeholder="HH:mm (ví dụ: 07:00)"
+                        keyboardType="numeric"
+                        additionalStyling={styles.input}
+                        maxLength={5}
                     />
                 </View>
 
@@ -214,9 +245,29 @@ const EditHealthInfoScreen = () => {
                         <Feather name="moon" size={18} color={COLOR_THEME.base.primary} />
                         <Text style={[textTheme.subText, styles.label]}>Giờ đi ngủ</Text>
                     </View>
-                    <TimePicker
-                        value={formData.bedTime || '23:00'}
-                        onChange={(time) => setFormData({ ...formData, bedTime: time })}
+                    <CommonTextInput
+                        value={formData.bedTime || ''}
+                        handleChangeText={(text) => {
+                            // Chỉ cho phép nhập số
+                            const numbersOnly = text.replace(/[^0-9]/g, '');
+
+                            // Tự động định dạng HH:mm
+                            let formatted = numbersOnly;
+                            if (numbersOnly.length > 2) {
+                                formatted = numbersOnly.slice(0, 2) + ':' + numbersOnly.slice(2, 4);
+                            } else if (numbersOnly.length === 2) {
+                                formatted = numbersOnly + ':';
+                            }
+
+                            // Giới hạn độ dài tối đa là 5 ký tự (HH:mm)
+                            if (formatted.length <= 5) {
+                                setFormData({ ...formData, bedTime: formatted });
+                            }
+                        }}
+                        placeholder="HH:mm (ví dụ: 23:00)"
+                        keyboardType="numeric"
+                        additionalStyling={styles.input}
+                        maxLength={5}
                     />
                 </View>
 

@@ -93,7 +93,7 @@ const ProfileScreen = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Đăng Xuất',
+      'Đăng xuất',
       'Bạn có chắc chắn muốn đăng xuất?',
       [
         {
@@ -101,7 +101,7 @@ const ProfileScreen = () => {
           style: 'cancel',
         },
         {
-          text: 'Đăng Xuất',
+          text: 'Đăng xuất',
           style: 'destructive',
           onPress: async () => {
             try {
@@ -125,7 +125,7 @@ const ProfileScreen = () => {
   };
 
   return (
-    <ScreenContainer headerTitle="Tài Khoản">
+    <ScreenContainer headerTitle="Tài khoản">
       <View style={styles.container}>
         {/* Profile Header */}
         <ProfileHeader user={user} />
@@ -135,12 +135,12 @@ const ProfileScreen = () => {
           <View style={styles.statsRow}>
             <StatCard
               icon="target"
-              title="Mục Tiêu"
+              title="Mục tiêu"
               value={formatValue(statistics.dailyGoal)}
             />
             <StatCard
               icon="water"
-              title="Hôm Nay"
+              title="Hôm nay"
               value={formatValue(statistics.dailyIntake)}
               subtitle={`${Math.round(statistics.progress)}% hoàn thành`}
               progress={statistics.progress}
@@ -149,13 +149,13 @@ const ProfileScreen = () => {
           <View style={styles.statsRow}>
             <StatCard
               icon="flame"
-              title="Chuỗi Ngày"
+              title="Chuỗi ngày"
               value={statistics.streak}
               subtitle="ngày liên tiếp"
             />
             <StatCard
               icon="trophy"
-              title="Tổng Quan"
+              title="Tổng quan"
               value={statistics.totalDaysAchieved}
               subtitle="ngày đạt mục tiêu"
             />
@@ -187,7 +187,7 @@ const ProfileScreen = () => {
           <View style={styles.logoutContent}>
             <Feather name="log-out" size={22} color="#EA6230" />
             <Text style={[textTheme.subText, styles.logoutText]}>
-              Đăng Xuất
+              Đăng xuất
             </Text>
           </View>
         </TouchableOpacity>

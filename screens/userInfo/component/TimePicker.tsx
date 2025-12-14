@@ -22,7 +22,6 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
     const hoursListRef = useRef<FlatList>(null);
     const minutesListRef = useRef<FlatList>(null);
 
-    // Parse initial value
     useEffect(() => {
         if (value) {
             const [h, m] = value.split(':');
@@ -33,14 +32,12 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
         }
     }, [value]);
 
-    // Open modal
     const openModal = () => {
         setTempHours(hours);
         setTempMinutes(minutes);
         setIsModalVisible(true);
     };
 
-    // Close modal and apply changes
     const closeModal = (apply: boolean) => {
         if (apply) {
             setHours(tempHours);
@@ -50,7 +47,6 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
         setIsModalVisible(false);
     };
 
-    // Generate options
     const hoursOptions = Array.from({ length: 24 }, (_, i) => {
         const hour = i.toString().padStart(2, '0');
         return hour;
@@ -61,12 +57,11 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
         return minute;
     });
 
-    // Scroll to selected value when modal opens
     useEffect(() => {
         if (isModalVisible) {
             const hoursIndex = hoursOptions.findIndex(h => h === tempHours);
             const minutesIndex = minutesOptions.findIndex(m => m === tempMinutes);
-            
+
             setTimeout(() => {
                 if (hoursIndex !== -1 && hoursListRef.current) {
                     hoursListRef.current.scrollToIndex({
@@ -179,7 +174,6 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
 
     return (
         <>
-            {/* Display Button */}
             <TouchableOpacity
                 style={styles.displayButton}
                 onPress={openModal}
@@ -216,134 +210,130 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
                         </View>
 
                         <View style={styles.pickerContainer}>
-                {/* Hours Picker */}
-                <View style={styles.pickerColumn}>
-                    <View style={styles.pickerHeader}>
-                        <Text style={styles.pickerLabel}>Giờ</Text>
-                    </View>
-                    <View style={styles.pickerWrapper}>
-                        <FlatList
-                            ref={hoursListRef}
-                            data={hoursOptions}
-                            keyExtractor={(item) => item}
-                            showsVerticalScrollIndicator={false}
-                            snapToInterval={ITEM_HEIGHT}
-                            decelerationRate="fast"
-                            onScroll={(e) =>
-                                handleScroll(e, hoursOptions, handleTempHoursChange)
-                            }
-                            scrollEventThrottle={16}
-                            nestedScrollEnabled={true}
-                            contentContainerStyle={{
-                                paddingTop: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
-                                paddingBottom: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
-                            }}
-                            onScrollToIndexFailed={(error: any) => {
-                                hoursListRef.current?.scrollToOffset({
-                                    offset: error.averageItemLength * error.index,
-                                    animated: false,
-                                });
-                                setTimeout(() => {
-                                    if (
-                                        hoursOptions.length !== 0 &&
-                                        hoursListRef.current !== null
-                                    ) {
-                                        hoursListRef.current.scrollToIndex({
-                                            index: error.index,
-                                            animated: false,
-                                        });
-                                    }
-                                }, 100);
-                            }}
-                            renderItem={renderHoursItem}
-                        />
-                    </View>
-                </View>
+                            <View style={styles.pickerColumn}>
+                                <View style={styles.pickerHeader}>
+                                    <Text style={styles.pickerLabel}>Giờ</Text>
+                                </View>
+                                <View style={styles.pickerWrapper}>
+                                    <FlatList
+                                        ref={hoursListRef}
+                                        data={hoursOptions}
+                                        keyExtractor={(item) => item}
+                                        showsVerticalScrollIndicator={false}
+                                        snapToInterval={ITEM_HEIGHT}
+                                        decelerationRate="fast"
+                                        onScroll={(e) =>
+                                            handleScroll(e, hoursOptions, handleTempHoursChange)
+                                        }
+                                        scrollEventThrottle={16}
+                                        nestedScrollEnabled={true}
+                                        contentContainerStyle={{
+                                            paddingTop: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
+                                            paddingBottom: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
+                                        }}
+                                        onScrollToIndexFailed={(error: any) => {
+                                            hoursListRef.current?.scrollToOffset({
+                                                offset: error.averageItemLength * error.index,
+                                                animated: false,
+                                            });
+                                            setTimeout(() => {
+                                                if (
+                                                    hoursOptions.length !== 0 &&
+                                                    hoursListRef.current !== null
+                                                ) {
+                                                    hoursListRef.current.scrollToIndex({
+                                                        index: error.index,
+                                                        animated: false,
+                                                    });
+                                                }
+                                            }, 100);
+                                        }}
+                                        renderItem={renderHoursItem}
+                                    />
+                                </View>
+                            </View>
 
-                {/* Separator */}
-                <View style={styles.separator}>
-                    <Text style={styles.separatorText}>:</Text>
-                </View>
+                            {/* Separator */}
+                            <View style={styles.separator}>
+                                <Text style={styles.separatorText}>:</Text>
+                            </View>
 
-                {/* Minutes Picker */}
-                <View style={styles.pickerColumn}>
-                    <View style={styles.pickerHeader}>
-                        <Text style={styles.pickerLabel}>Phút</Text>
-                    </View>
-                    <View style={styles.pickerWrapper}>
-                        <FlatList
-                            ref={minutesListRef}
-                            data={minutesOptions}
-                            keyExtractor={(item) => item}
-                            showsVerticalScrollIndicator={false}
-                            snapToInterval={ITEM_HEIGHT}
-                            decelerationRate="fast"
-                            onScroll={(e) =>
-                                handleScroll(
-                                    e,
-                                    minutesOptions,
-                                    handleTempMinutesChange,
-                                )
-                            }
-                            scrollEventThrottle={16}
-                            nestedScrollEnabled={true}
-                            contentContainerStyle={{
-                                paddingTop: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
-                                paddingBottom: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
-                            }}
-                            onScrollToIndexFailed={(error: any) => {
-                                minutesListRef.current?.scrollToOffset({
-                                    offset: error.averageItemLength * error.index,
-                                    animated: false,
-                                });
-                                setTimeout(() => {
-                                    if (
-                                        minutesOptions.length !== 0 &&
-                                        minutesListRef.current !== null
-                                    ) {
-                                        minutesListRef.current.scrollToIndex({
-                                            index: error.index,
-                                            animated: false,
-                                        });
-                                    }
-                                }, 100);
-                            }}
-                            renderItem={renderMinutesItem}
-                        />
-                    </View>
-                </View>
+                            <View style={styles.pickerColumn}>
+                                <View style={styles.pickerHeader}>
+                                    <Text style={styles.pickerLabel}>Phút</Text>
+                                </View>
+                                <View style={styles.pickerWrapper}>
+                                    <FlatList
+                                        ref={minutesListRef}
+                                        data={minutesOptions}
+                                        keyExtractor={(item) => item}
+                                        showsVerticalScrollIndicator={false}
+                                        snapToInterval={ITEM_HEIGHT}
+                                        decelerationRate="fast"
+                                        onScroll={(e) =>
+                                            handleScroll(
+                                                e,
+                                                minutesOptions,
+                                                handleTempMinutesChange,
+                                            )
+                                        }
+                                        scrollEventThrottle={16}
+                                        nestedScrollEnabled={true}
+                                        contentContainerStyle={{
+                                            paddingTop: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
+                                            paddingBottom: (ITEM_HEIGHT * (VISIBLE_ITEMS - 1)) / 2,
+                                        }}
+                                        onScrollToIndexFailed={(error: any) => {
+                                            minutesListRef.current?.scrollToOffset({
+                                                offset: error.averageItemLength * error.index,
+                                                animated: false,
+                                            });
+                                            setTimeout(() => {
+                                                if (
+                                                    minutesOptions.length !== 0 &&
+                                                    minutesListRef.current !== null
+                                                ) {
+                                                    minutesListRef.current.scrollToIndex({
+                                                        index: error.index,
+                                                        animated: false,
+                                                    });
+                                                }
+                                            }, 100);
+                                        }}
+                                        renderItem={renderMinutesItem}
+                                    />
+                                </View>
+                            </View>
 
-                {/* Period Display (SA/CH) */}
-                <View style={styles.periodContainer}>
-                    <View style={styles.periodBox}>
-                        <Text style={styles.periodText}>
-                            {parseInt(tempHours) >= 12 ? 'CH' : 'SA'}
-                        </Text>
-                    </View>
-                </View>
-            </View>
+                            <View style={styles.periodContainer}>
+                                <View style={styles.periodBox}>
+                                    <Text style={styles.periodText}>
+                                        {parseInt(tempHours) >= 12 ? 'CH' : 'SA'}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
 
-            {/* Display formatted time in modal */}
-            <View style={styles.timeDisplay}>
-                <Feather name="clock" size={16} color={COLOR_THEME.base.primary} />
-                <Text style={styles.timeDisplayText}>
-                    {formatTime(tempHours, tempMinutes)}
-                </Text>
-            </View>
+                        {/* Display formatted time in modal */}
+                        <View style={styles.timeDisplay}>
+                            <Feather name="clock" size={16} color={COLOR_THEME.base.primary} />
+                            <Text style={styles.timeDisplayText}>
+                                {formatTime(tempHours, tempMinutes)}
+                            </Text>
+                        </View>
 
-            {/* Modal Actions */}
-            <View style={styles.modalActions}>
-                <TouchableOpacity
-                    style={[styles.modalButton, styles.cancelButton]}
-                    onPress={() => closeModal(false)}>
-                    <Text style={styles.cancelButtonText}>Hủy</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.modalButton, styles.confirmButton]}
-                    onPress={() => closeModal(true)}>
-                    <Text style={styles.confirmButtonText}>Xác nhận</Text>
-                </TouchableOpacity>
-            </View>
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.cancelButton]}
+                                onPress={() => closeModal(false)}>
+                                <Text style={styles.cancelButtonText}>Hủy</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.confirmButton]}
+                                onPress={() => closeModal(true)}>
+                                <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                            </TouchableOpacity>
+                        </View>
                     </Pressable>
                 </Pressable>
             </Modal>

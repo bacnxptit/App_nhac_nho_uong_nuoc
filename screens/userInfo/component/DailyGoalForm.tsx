@@ -95,7 +95,6 @@ const DailyGoalForm = ({
                   }
                 }
                 updateDailyIntake={value => {
-                  // Chuyển đổi từ L sang ml nếu cần
                   const valueInMl = value.type === 'L' ? value.value * 1000 : value.value;
                   const updatedValue = { ...value, value: valueInMl, type: 'ml' as const };
                   updateDailyGoal(updatedValue);
@@ -110,13 +109,9 @@ const DailyGoalForm = ({
           <TouchableOpacity
             onPress={async () => {
               try {
-                // Chuyển đổi giá trị sang ml nếu đang dùng L
                 const goalInMl = dailyGoal.type === 'L' ? dailyGoal.value * 1000 : dailyGoal.value;
-                // Đảm bảo có giá trị hợp lệ
                 const finalGoal = goalInMl > 0 ? goalInMl : (initialValue?.value || 2000);
-                // Cập nhật dailyGoal trong parent component
                 updateDailyGoal({ value: finalGoal, type: 'ml' });
-                // Truyền giá trị trực tiếp vào submitAllInfo
                 await submitAllInfo(finalGoal);
               } catch (error) {
                 console.error('Error in Let\'s Hydrate button:', error);
@@ -134,13 +129,6 @@ const DailyGoalForm = ({
 export default DailyGoalForm;
 
 const styles = StyleSheet.create({
-  modalContainer: {
-    justifyContent: 'center',
-    display: 'flex',
-    flexDirection: 'row',
-    padding: 10,
-    backgroundColor: 'grey',
-  },
   container: {
     flex: 1,
     alignItems: 'center',

@@ -5,9 +5,9 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import React, {useContext, useState} from 'react';
-import {FontContext} from '@/context/FontThemeContext';
-import {IntakeHistoryType} from '@/storage/userinfo/type';
+import React, { useContext, useState } from 'react';
+import { FontContext } from '@/context/FontThemeContext';
+import { IntakeHistoryType } from '@/storage/userinfo/type';
 import HistoryCard from './HistoryCard';
 
 type WaterIntakeHistoryTodayProps = {
@@ -26,7 +26,7 @@ const WaterIntakeHistoryToday = ({
   noDataText,
   noTopPadding = false,
 }: WaterIntakeHistoryTodayProps) => {
-  const {textTheme} = useContext(FontContext);
+  const { textTheme } = useContext(FontContext);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const handleOutsidePress = () => {
@@ -35,7 +35,7 @@ const WaterIntakeHistoryToday = ({
   const renderView = () => {
     if (todayHistoryList.length === 0) {
       return (
-        <View>
+        <View style={styles.emptyContainer}>
           <View
             style={{
               flexDirection: 'row',
@@ -55,7 +55,7 @@ const WaterIntakeHistoryToday = ({
           <Text
             style={[
               textTheme.subText,
-              {textAlign: 'center', marginBottom: 0},
+              { textAlign: 'center', marginBottom: 0 },
             ]}>
             {noDataText || 'Bạn chưa có lịch sử uống nước hôm nay'}
           </Text>
@@ -66,7 +66,7 @@ const WaterIntakeHistoryToday = ({
     return (
       <View>
         {todayHistoryList.map((item, index) => (
-          <View key={item.id} style={{marginTop: index === 0 ? 0 : 10, paddingBottom: index === todayHistoryList.length - 1 ? 0 : 10}}>
+          <View key={item.id} style={{ marginTop: index === 0 ? 0 : 10, paddingBottom: index === todayHistoryList.length - 1 ? 0 : 10 }}>
             <HistoryCard
               handleHistoryDelete={handleHistoryDelete}
               openMenuId={openMenuId}
@@ -81,11 +81,11 @@ const WaterIntakeHistoryToday = ({
   };
   return (
     <TouchableWithoutFeedback onPress={handleOutsidePress}>
-      <View style={[styles.container, noTopPadding && {paddingTop: 0, marginTop: 0}]}>
-        <View style={[styles.header, noTopPadding && {marginTop: 0, paddingTop: 0}]}>
-          <Text style={textTheme.heading3}>{title || 'Lịch Sử'}</Text>
+      <View style={[styles.container, noTopPadding && { paddingTop: 0, marginTop: 0 }]}>
+        <View style={[styles.header, noTopPadding && { marginTop: 0, paddingTop: 0 }]}>
+          <Text style={textTheme.heading3}>{title || 'Lịch sử'}</Text>
         </View>
-        <View>{renderView()}</View>
+        <View style={styles.content}>{renderView()}</View>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -95,6 +95,7 @@ export default WaterIntakeHistoryToday;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: 30,
     paddingTop: 30,
@@ -108,5 +109,13 @@ const styles = StyleSheet.create({
     marginTop: 0,
     paddingTop: 0,
     marginBottom: 0,
+  },
+  content: {
+    flex: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

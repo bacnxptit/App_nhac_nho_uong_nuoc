@@ -21,7 +21,6 @@ const UpdateDailyWaterIntakeForm = ({
   updateDailyIntake,
 }: UpdateDailyWaterIntakeFormProps) => {
   const { textTheme } = useContext(FontContext);
-  // callbacks
   const [newAmount, setNewAmount] = useState<string>(
     initialValue.value.toString() || '0',
   );

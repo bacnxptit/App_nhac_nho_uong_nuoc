@@ -23,6 +23,7 @@ import CommonTextInput from '@/components/field/CommonTextInput';
 import { ButtonTheme } from '@/style/ButtonTheme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { capitalizeFirstLetter } from '@/util/SiteUtil';
 
 const AccountInfo = () => {
   const { textTheme } = useContext(FontContext);
@@ -62,7 +63,8 @@ const AccountInfo = () => {
 
     setIsSavingName(true);
     try {
-      await updateUserInfo(editedName, 'name');
+      const capitalizedName = capitalizeFirstLetter(editedName);
+      await updateUserInfo(capitalizedName, 'name');
       setIsEditingName(false);
       Alert.alert('Thành công', 'Đã cập nhật tên thành công');
     } catch (error) {
@@ -267,7 +269,7 @@ const AccountInfo = () => {
           ) : (
             <View style={styles.nameContainer}>
               <Text style={[textTheme.heading1, styles.userName]}>
-                {user?.name || 'Người Dùng'}
+                {user?.name ? capitalizeFirstLetter(user.name) : 'Người Dùng'}
               </Text>
               <TouchableOpacity
                 onPress={() => setIsEditingName(true)}

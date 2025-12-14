@@ -123,9 +123,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     gap: 20,
     justifyContent: 'center',
-    // alignItems: 'center',
   },
   heightSelect: {
-    // flex: 1,
   },
 });

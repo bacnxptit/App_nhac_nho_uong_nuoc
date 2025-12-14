@@ -101,7 +101,7 @@ const Header = ({ title, containerStyling, useSafeArea = false, showBackButton =
                     <Feather name="user" size={22} color="#4a90e2" />
                   </View>
                   <Text style={[textTheme.subText, styles.menuItemText]}>
-                    Tài Khoản
+                    Tài khoản
                   </Text>
                   <Feather name="chevron-right" size={20} color="#ccc" />
                 </TouchableOpacity>
@@ -115,7 +115,7 @@ const Header = ({ title, containerStyling, useSafeArea = false, showBackButton =
                     <Feather name="bell" size={22} color="#4a90e2" />
                   </View>
                   <Text style={[textTheme.subText, styles.menuItemText]}>
-                    Nhắc Nhở Uống Nước
+                    Nhắc nhở uống nước
                   </Text>
                   <Feather name="chevron-right" size={20} color="#ccc" />
                 </TouchableOpacity>
@@ -132,7 +132,7 @@ const Header = ({ title, containerStyling, useSafeArea = false, showBackButton =
                       styles.menuItemText,
                       styles.menuItemTextDanger,
                     ]}>
-                    Đăng Xuất
+                    Đăng xuất
                   </Text>
                 </TouchableOpacity>
               </View>

@@ -4,6 +4,7 @@ import { FontContext } from '@/context/FontThemeContext';
 import { ButtonTheme } from '@/style/ButtonTheme';
 import CommonTextInput from '@/components/field/CommonTextInput';
 import { ScreenDimension } from '@/constants/Dimensions';
+import { capitalizeFirstLetter } from '@/util/SiteUtil';
 
 type UserNameFormProps = {
   updateName: (name: string) => void;
@@ -36,7 +37,7 @@ const UserNameForm = ({ updateName, initialValue }: UserNameFormProps) => {
           <TouchableOpacity
             disabled={name === ''}
             onPress={() => {
-              updateName(name);
+              updateName(capitalizeFirstLetter(name));
             }}
             style={[
               ButtonTheme.containedButton,

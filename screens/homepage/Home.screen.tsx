@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   historyContainer: {
+    flex: 1,
     width: '100%',
     marginTop: ScreenDimension.scale(20),
     paddingBottom: ScreenDimension.scale(20),
