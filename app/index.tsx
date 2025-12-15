@@ -12,10 +12,8 @@ const Index = () => {
     const checkOnboarding = async () => {
       try {
         const seen = await LocalStorage.getHasSeenOnboarding();
-        console.log('[Index] hasSeenOnboarding value:', seen);
         setHasSeenOnboarding(seen);
       } catch (error) {
-        console.error('[Index] Error checking onboarding:', error);
         setHasSeenOnboarding(false);
       }
     };
@@ -32,10 +30,6 @@ const Index = () => {
     return <View style={{ flex: 1, backgroundColor: '#F5F5F5' }} />;
   }
 
-  console.log('[Index] Rendering with hasSeenOnboarding:', hasSeenOnboarding, 'user:', user?.isCompleted);
-
-  // Nếu user đã hoàn thành thông tin (isCompleted = true), 
-  // thì không cần hiển thị onboarding nữa, ngay cả khi flag bị mất
   const shouldShowOnboarding = !hasSeenOnboarding && !(user?.isCompleted);
 
   if (shouldShowOnboarding) {

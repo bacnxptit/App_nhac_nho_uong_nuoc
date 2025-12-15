@@ -117,9 +117,7 @@ export const hasPendingSync = async (): Promise<boolean> => {
 export const setHasSeenOnboarding = async (hasSeen: boolean): Promise<void> => {
     try {
         await AsyncStorage.setItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING, JSON.stringify(hasSeen));
-        console.log('[LocalStorage] Saved hasSeenOnboarding:', hasSeen);
     } catch (error) {
-        console.error('[LocalStorage] Error saving hasSeenOnboarding:', error);
         throw error;
     }
 };
@@ -127,11 +125,8 @@ export const setHasSeenOnboarding = async (hasSeen: boolean): Promise<void> => {
 export const getHasSeenOnboarding = async (): Promise<boolean> => {
     try {
         const data = await AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING);
-        const result = data ? JSON.parse(data) : false;
-        console.log('[LocalStorage] Retrieved hasSeenOnboarding:', result, 'raw data:', data);
-        return result;
+        return data ? JSON.parse(data) : false;
     } catch (error) {
-        console.error('[LocalStorage] Error getting hasSeenOnboarding:', error);
         return false;
     }
 };
