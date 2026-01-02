@@ -15,8 +15,8 @@ const DropdownSelector = ({
   options,
 }: DropdownSelectorProps) => {
   const flatListRef = useRef<FlatList>(null);
-  const ITEM_HEIGHT = 50; // Height of each item in the list
-  const VISIBLE_ITEMS = 7; // Number of visible items in the FlatList
+  const ITEM_HEIGHT = 50; 
+  const VISIBLE_ITEMS = 7; 
 
   useEffect(() => {
     const findIndex = options.findIndex(
@@ -52,8 +52,8 @@ const DropdownSelector = ({
         ref={flatListRef}
         keyExtractor={item => item.toString()}
         showsVerticalScrollIndicator={false}
-        snapToInterval={ITEM_HEIGHT} // Makes sure items snap into place
-        decelerationRate="fast" // Faster scroll stop
+        snapToInterval={ITEM_HEIGHT} 
+        decelerationRate="fast" 
         onScroll={handleScroll}
         scrollEventThrottle={16}
         nestedScrollEnabled={true}
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   heightItem: {
-    height: 50, // Each item height
+    height: 50, 
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   },
   selectedHeightContainer: {
     borderTopWidth: 2,
-    backgroundColor: '#fff', // Light background for selected height area
+    backgroundColor: '#fff', 
     borderBottomWidth: 2,
     borderColor: COLOR_THEME.base.primary,
   },

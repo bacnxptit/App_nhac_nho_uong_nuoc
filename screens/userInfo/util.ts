@@ -76,13 +76,13 @@ export const calculateWaterIntake = ({
 }: WaterIntakeInput): number => {
   let waterIntake = weight * 0.035;
 
-  if (gender === 'male') {
+  {if (gender === 'male') {
     waterIntake += 0.5;
   } else if (gender === 'female') {
     waterIntake += 0.3;
   } else {
     waterIntake += 0.5;
-  }
+  }}
 
   if (height > 175) {
     waterIntake += 0.3;

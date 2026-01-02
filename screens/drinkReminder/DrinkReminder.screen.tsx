@@ -72,25 +72,19 @@ const DrinkReminder = () => {
   };
 
   const handleHoursChange = (text: string) => {
-    // Chỉ cho phép nhập số
     const numericValue = text.replace(/[^0-9]/g, '');
-    // Nếu nhập số mới và giá trị hiện tại đã có 2 chữ số, thay thế bằng số mới
     if (localHours.length === 2 && numericValue.length === 1) {
       setLocalHours(numericValue);
     } else {
-      // Giới hạn tối đa 2 chữ số
       setLocalHours(numericValue.slice(0, 2));
     }
   };
 
   const handleMinutesChange = (text: string) => {
-    // Chỉ cho phép nhập số
     const numericValue = text.replace(/[^0-9]/g, '');
-    // Nếu nhập số mới và giá trị hiện tại đã có 2 chữ số, thay thế bằng số mới
     if (localMinutes.length === 2 && numericValue.length === 1) {
       setLocalMinutes(numericValue);
     } else {
-      // Giới hạn tối đa 2 chữ số
       setLocalMinutes(numericValue.slice(0, 2));
     }
   };
@@ -116,11 +110,7 @@ const DrinkReminder = () => {
       minutesNum = 0;
       setLocalMinutes('00');
     }
-
-    // Tính tổng phút
     let totalMinutes = hoursNum * 60 + minutesNum;
-
-    // Tối thiểu 1 phút
     if (totalMinutes < MIN_MINUTES || (hoursNum === 0 && minutesNum === 0)) {
       totalMinutes = MIN_MINUTES;
       setLocalHours('00');
@@ -134,7 +124,6 @@ const DrinkReminder = () => {
     let hoursValue = localHours.trim();
     const hoursNum = parseInt(hoursValue, 10);
 
-    // Nếu rỗng hoặc không hợp lệ, set về 00
     if (hoursValue === '' || isNaN(hoursNum)) {
       hoursValue = '00';
       setLocalHours('00');
@@ -148,7 +137,6 @@ const DrinkReminder = () => {
     } else if (finalHoursNum < 0) {
       setLocalHours('00');
     } else {
-      // Format về 2 chữ số
       setLocalHours(finalHoursNum.toString().padStart(2, '0'));
     }
     calculateAndUpdate(localHours || '00', localMinutes);
@@ -157,8 +145,6 @@ const DrinkReminder = () => {
   const handleMinutesBlur = () => {
     let minutesValue = localMinutes.trim();
     const minutesNum = parseInt(minutesValue, 10);
-
-    // Nếu rỗng hoặc không hợp lệ, set về giá trị tối thiểu
     if (minutesValue === '' || isNaN(minutesNum)) {
       minutesValue = MIN_MINUTES.toString().padStart(2, '0');
       setLocalMinutes(MIN_MINUTES.toString().padStart(2, '0'));

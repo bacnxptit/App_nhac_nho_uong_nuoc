@@ -18,7 +18,7 @@ export const useDrinkReminder = () => {
   const [selectedInterval, setSelectedInterval] = useState<ReminderInterval>('2hours');
   const [reminderMinutes, setReminderMinutes] = useState<number>(120);
 
-  // Request notification permissions on load
+ 
   useEffect(() => {
     if (Platform.OS !== 'web') {
       requestPermissionNotificationReminder().then(({ status }) => {
@@ -63,7 +63,7 @@ export const useDrinkReminder = () => {
       setIsReminderActive(false);
     }
   };
-  // Cancel existing notifications if reminder is paused
+
   const toggleReminder = async () => {
     if (Platform.OS === 'web') {
       alert('Notifications are not available on web. Please use the mobile app.');
@@ -87,7 +87,7 @@ export const useDrinkReminder = () => {
     setIsReminderActive(!isReminderActive);
   };
 
-  // Schedule notification based on selected interval
+
   const scheduleReminder = async (interval?: ReminderInterval) => {
     if (Platform.OS === 'web') {
       return;
@@ -96,7 +96,6 @@ export const useDrinkReminder = () => {
       const intervalToUse = interval || selectedInterval;
       await Notifications.cancelAllScheduledNotificationsAsync();
       const customMinutes = intervalToUse === 'custom' ? reminderMinutes : undefined;
-      // Pass userInfo to enable smart scheduling based on wakeUpTime and bedTime
       await startReminder(intervalToUse, userInfo || null, customMinutes);
       const intervalLabel = getIntervalLabel(intervalToUse, customMinutes);
       if (Platform.OS === 'android') {
@@ -120,7 +119,10 @@ export const useDrinkReminder = () => {
     try {
       setReminderMinutes(minutes);
       await AsyncStorage.setItem(REMINDER_MINUTES_KEY, minutes.toString());
-      // Không tự động đặt nhắc nhở khi chỉ nhập thời gian
+      // Tự động cập nhật reminder nếu đang active và đang dùng custom interval
+      if (isReminderActive && selectedInterval === 'custom') {
+        await scheduleReminder('custom');
+      }
     } catch (error) {
       console.error('Error updating reminder minutes:', error);
     }
@@ -135,11 +137,9 @@ export const useDrinkReminder = () => {
 
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      // Pass userInfo to enable smart scheduling based on wakeUpTime and bedTime
       await startReminder('custom', userInfo || null, reminderMinutes);
       const intervalLabel = getIntervalLabel('custom', reminderMinutes);
       
-      // Hiển thị thông báo "Nhắc nhở đã đặt mỗi XX giờ"
       const message = `Nhắc nhở đã đặt mỗi ${intervalLabel}`;
       if (Platform.OS === 'android') {
         ToastAndroid.show(message, 3000);
